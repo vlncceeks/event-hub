@@ -3,6 +3,8 @@ package mamonova.com.events.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mamonova.com.events.dto.request.UpdateUserRequest;
+import mamonova.com.events.dto.response.UserResponse;
+import mamonova.com.events.mapper.UserMapper;
 import mamonova.com.events.model.User;
 import mamonova.com.events.service.AuthService;
 import mamonova.com.events.service.TokenService;
@@ -20,29 +22,36 @@ public class UserController {
 
     private final UserService userService;
     private final AuthService authService;
+    private final UserMapper userMapper;
 
     @GetMapping
-    public List<User> getAll() {
-        return userService.getAll();
+    public ResponseEntity<List<UserResponse>> getAll() {
+        return ResponseEntity.ok(
+                userMapper.toDtoList(userService.getAll())
+        );
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> get(@RequestHeader(value = "Authorization") String authHeader) {
+    public ResponseEntity<UserResponse> get(@RequestHeader(value = "Authorization") String authHeader) {
         Long userId = authService.getCurrentUser(authHeader);
 
-        User user = userService.getUser(userId);
-        return ResponseEntity.ok(user);
+        User user = userService.findById(userId);
+        return ResponseEntity.ok(
+                userMapper.toDto(user)
+        );
     }
 
     @PutMapping("/me")
-    public ResponseEntity<?> update(
+    public ResponseEntity<UserResponse> update(
             @Valid @RequestBody UpdateUserRequest request,
             @RequestHeader(value = "Authorization") String authHeader
     ) {
         Long userId = authService.getCurrentUser(authHeader);
 
         User updatedUser = userService.updateUser(userId, request);
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.ok(
+                userMapper.toDto(updatedUser)
+        );
     }
 
     @DeleteMapping("/me")

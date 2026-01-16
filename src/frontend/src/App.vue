@@ -1,17 +1,23 @@
 <template>
+  <Header></Header>
   <AuthHeader></AuthHeader>
   <UsersList></UsersList>
+  <EventList></EventList>
 </template>
 
 <script>
 import UsersList from "@/components/UsersList.vue";
 import AuthHeader from "@/components/AuthHeader.vue";
+import EventList  from "@/components/EventList.vue";
+import Header from "@/components/AppHeader.vue";
 
 export default {
   name: 'App',
   components: {
     UsersList,
-    AuthHeader
+    AuthHeader,
+    EventList,
+    Header
   }
 }
 </script>

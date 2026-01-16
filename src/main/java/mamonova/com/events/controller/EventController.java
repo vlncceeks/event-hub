@@ -4,7 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mamonova.com.events.dto.request.CreateEventRequest;
 import mamonova.com.events.dto.request.UpdateEventRequest;
+import mamonova.com.events.dto.response.EventResponse;
 import mamonova.com.events.exception.AccessDeniedException;
+import mamonova.com.events.mapper.EventMapper;
 import mamonova.com.events.model.Event;
 import mamonova.com.events.model.Role;
 import mamonova.com.events.model.User;
@@ -24,40 +26,47 @@ public class EventController {
     private final AuthService authService;
     private final UserService userService;
     private final EventService eventService;
+    private final EventMapper eventMapper;
 
     @GetMapping
-    public List<Event> getAll() {
-        return eventService.getAll();
+    public ResponseEntity<List<EventResponse>> getAll() {
+        return ResponseEntity.ok(
+                eventMapper.toDtoList(eventService.getAll())
+        );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> get(@PathVariable Long eventId) {
-        return ResponseEntity.ok(eventService.findById(eventId));
+    public ResponseEntity<EventResponse> get(@PathVariable("id") Long eventId) {
+        return ResponseEntity.ok(
+                eventMapper.toDto(eventService.findById(eventId))
+        );
     }
 
     @PostMapping("")
-    public ResponseEntity<?> create(@Valid @RequestBody CreateEventRequest event,
+    public ResponseEntity<EventResponse> create(@Valid @RequestBody CreateEventRequest event,
                                     @RequestHeader(value = "Authorization") String authHeader) {
         Long userId = authService.getCurrentUser(authHeader);
         userService.onlyAdmin(userId);
 
-        Event createdEvent = eventService.create(event);
-        return ResponseEntity.ok(createdEvent);
+        return ResponseEntity.ok(
+                eventMapper.toDto(eventService.create(event))
+        );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long eventId,
+    public ResponseEntity<EventResponse> update(@PathVariable("id") Long eventId,
                                     @Valid @RequestBody UpdateEventRequest event,
                                     @RequestHeader(value = "Authorization") String authHeader) {
         Long userId = authService.getCurrentUser(authHeader);
         userService.onlyAdmin(userId);
 
-        Event createdEvent = eventService.update(eventId, event);
-        return ResponseEntity.ok(createdEvent);
+        return ResponseEntity.ok(
+                eventMapper.toDto(eventService.update(eventId, event))
+        );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long eventId,
+    public ResponseEntity<?> delete(@PathVariable("id") Long eventId,
                                     @RequestHeader(value = "Authorization") String authHeader) {
         Long userId = authService.getCurrentUser(authHeader);
         userService.onlyAdmin(userId);

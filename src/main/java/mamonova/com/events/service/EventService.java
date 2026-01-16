@@ -7,6 +7,7 @@ import mamonova.com.events.exception.NotFoundException;
 import mamonova.com.events.model.Event;
 import mamonova.com.events.repository.EventRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -35,22 +36,30 @@ public class EventService {
         event.setTitle(request.getTitle() != null ? request.getTitle() : event.getTitle());
         event.setDescription(request.getDescription() != null ? request.getDescription() : event.getDescription());
         event.setDate(request.getDate() != null ? request.getDate() : event.getDate());
-        event.setTotalSeats(request.getTotalSeats() != null ? request.getTotalSeats() : event.getTotalSeats());
+        if (request.getTotalSeats() != null) {
+            int diff = request.getTotalSeats() - event.getTotalSeats();
+            event.setTotalSeats(request.getTotalSeats());
+            event.setAvailableSeats(event.getAvailableSeats() + diff);
+        }
         event.setImageUrl(request.getImageUrl() != null ? request.getImageUrl() : null);
         return eventRepository.save(event);
     }
 
+    @Transactional
+    public Event findByIdForUpdate(Long id) {
+        return eventRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new NotFoundException("Event not found"));
+    }
+
+    @Transactional(readOnly = true)
     public Event findById(Long id) {
-        if (eventRepository.findById(id) == null) {
-            throw new NotFoundException("Event not found");
-        }
-        return eventRepository.findById(id).get();
+        return eventRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Event not found"));
     }
 
     public void delete(Long id) {
-        if (eventRepository.findById(id) == null) {
-            throw new NotFoundException("Event not found");
-        }
+        eventRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Event not found"));
         eventRepository.deleteById(id);
     }
 }

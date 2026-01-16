@@ -56,10 +56,6 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User getUser(Long id) {
-        return findById(id);
-    }
-
     public User updateUser(Long id, UpdateUserRequest request) {
         User user = findById(id);
 
@@ -75,7 +71,7 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    private User findById(Long id) {
+    public User findById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
         return user;
@@ -88,7 +84,7 @@ public class UserService {
     }
 
     public void onlyAdmin(Long userId) {
-        User user = getUser(userId);
+        User user = findById(userId);
 
         if (user.getRole() != Role.ADMIN) throw new AccessDeniedException("Not enough rights");
     }

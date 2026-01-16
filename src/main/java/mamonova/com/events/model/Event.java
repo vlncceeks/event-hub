@@ -57,7 +57,4 @@ public class Event {
         return availableSeats <= 0;
     }
 
-    public Integer getRemainingSeats() {
-        return availableSeats;
-    }
 }

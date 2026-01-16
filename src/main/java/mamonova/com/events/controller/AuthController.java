@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import mamonova.com.events.dto.request.SignInRequest;
 import mamonova.com.events.dto.request.SignUpRequest;
 import mamonova.com.events.dto.response.AuthResponse;
+import mamonova.com.events.mapper.AuthMapper;
 import mamonova.com.events.model.User;
 import mamonova.com.events.service.TokenService;
 import mamonova.com.events.service.UserService;
@@ -19,29 +20,26 @@ public class AuthController {
 
     private final UserService userService;
     private final TokenService tokenService;
+    private final AuthMapper authMapper;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody SignUpRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody SignUpRequest request) {
         User user = userService.register(request);
         String token = tokenService.generateToken(user.getId());
 
-        return ResponseEntity.ok(new AuthResponse(
-                token,
-                user.getEmail(),
-                user.getUsername()
-        ));
+        return ResponseEntity.ok(
+                authMapper.toDto(token, user)
+        );
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody SignInRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody SignInRequest request) {
         User user = userService.login(request);
         String token = tokenService.generateToken(user.getId());
 
-        return ResponseEntity.ok(new AuthResponse(
-                token,
-                user.getEmail(),
-                user.getUsername()
-        ));
+        return ResponseEntity.ok(
+                authMapper.toDto(token, user)
+        );
     }
 
     @PostMapping("/logout")
