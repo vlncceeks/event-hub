@@ -92,4 +92,18 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
         return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Map<String, Object>> handleBadRequestException(
+            BadRequestException ex, HttpServletRequest request) {
+        Map<String, Object> body = buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDeniedException(
+            AccessDeniedException ex, HttpServletRequest request) {
+        Map<String, Object> body = buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+        return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
+    }
 }

@@ -1,46 +1,43 @@
 <script setup>
 import { useAuth } from "@/store/auth";
-import { useRouter } from "vue-router";
+import { defineEmits } from "vue";
 
-const router = useRouter();
-const { isAuthenticated, logout } = useAuth();
+const emit = defineEmits(["navigate"]);
+const { isAuthenticated, logout, isAdmin } = useAuth();
 
-const handleLogout = () => {
-  logout();
-  router.push("/login"); // или "/" — куда нужно
-};
+const go = (view) => emit("navigate", view);
 </script>
 
 <template>
   <ul class="nav">
-
     <li class="nav-item">
-      <router-link class="nav-link" to="/events">
+      <button class="nav-link btn btn-link" @click="go('events')">
         Мероприятия
-      </router-link>
-    </li>
-
-    <li class="nav-item" v-if="isAuthenticated">
-      <router-link class="nav-link" to="/UserProfile">
-        Профиль
-      </router-link>
-    </li>
-
-    <li class="nav-item" v-if="isAuthenticated">
-      <button
-          class="nav-link btn btn-link"
-          type="button"
-          @click="handleLogout"
-      >
-        Выйти
       </button>
     </li>
 
-  </ul>
-</template>
+    <li class="nav-item" v-if="!isAuthenticated">
+      <button class="nav-link btn btn-link" @click="go('login')">
+        Войти
+      </button>
+    </li>
 
-<style scoped>
-button.nav-link {
-  cursor: pointer;
-}
-</style>
+    <li class="nav-item" v-if="isAuthenticated">
+      <button class="nav-link btn btn-link" @click="go('profile')">
+        Профиль
+      </button>
+    </li>
+
+    <li class="nav-item" v-if="isAuthenticated">
+      <button class="nav-link btn btn-link" @click="logout">
+        Выйти
+      </button>
+    </li>
+    <div v-if="isAdmin">
+      <button class="nav-link btn btn-link" @click="go('users')">
+        Пользователи
+      </button>
+    </div>
+  </ul>
+
+</template>

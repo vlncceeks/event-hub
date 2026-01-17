@@ -42,7 +42,7 @@ public class EventController {
         );
     }
 
-    @PostMapping("")
+    @PostMapping
     public ResponseEntity<EventResponse> create(@Valid @RequestBody CreateEventRequest event,
                                     @RequestHeader(value = "Authorization") String authHeader) {
         Long userId = authService.getCurrentUser(authHeader);

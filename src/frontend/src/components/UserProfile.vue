@@ -7,24 +7,52 @@ const { isAuthenticated, user, token } = useAuth();
 const registrations = ref([]);
 const loading = ref(true);
 const error = ref(null);
+const cancellingId = ref(null); // для дизейбла кнопки отмены
+
+const API_URL = "http://localhost:8081";
 
 const fetchRegistrations = async () => {
+  loading.value = true;
   try {
-    const response = await fetch("http://localhost:8080/users/me/registrations", {
+    const response = await fetch(`${API_URL}/users/me/registrations`, {
       headers: {
         Authorization: `Bearer ${token.value}`,
       },
     });
 
-    if (!response.ok) {
-      throw new Error("Не удалось загрузить записи");
-    }
+    if (!response.ok) throw new Error("Не удалось загрузить записи");
 
     registrations.value = await response.json();
   } catch (e) {
     error.value = e.message;
   } finally {
     loading.value = false;
+  }
+};
+
+const cancelRegistration = async (eventId) => {
+  cancellingId.value = eventId;
+  try {
+    const res = await fetch(`${API_URL}/events/${eventId}/register`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+      },
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || "Ошибка отмены записи");
+    }
+
+    // удаляем запись из списка
+    registrations.value = registrations.value.filter(r => r.event.id !== eventId);
+
+  } catch (e) {
+    console.error(e);
+    error.value = e.message;
+  } finally {
+    cancellingId.value = null;
   }
 };
 
@@ -47,25 +75,12 @@ onMounted(() => {
         <div v-else class="card shadow-sm mb-4">
           <div class="card-body">
             <h4 class="card-title mb-3">Личный кабинет</h4>
-
             <ul class="list-group list-group-flush">
               <li class="list-group-item">
-                <strong>ID:</strong> {{ user.id }}
+                <strong>Имя пользователя:</strong> {{ user?.username }}
               </li>
               <li class="list-group-item">
-                <strong>Имя пользователя:</strong> {{ user.username }}
-              </li>
-              <li class="list-group-item">
-                <strong>Email:</strong> {{ user.email }}
-              </li>
-              <li class="list-group-item">
-                <strong>Роль:</strong>
-                <span
-                    class="badge"
-                    :class="user.role === 'ADMIN' ? 'bg-danger' : 'bg-primary'"
-                >
-                  {{ user.role }}
-                </span>
+                <strong>Email:</strong> {{ user?.email }}
               </li>
             </ul>
           </div>
@@ -100,9 +115,21 @@ onMounted(() => {
                   </small>
                 </div>
 
-                <span class="badge bg-success">
-                  Записан
-                </span>
+                <div class="d-flex gap-2">
+                  <span class="badge bg-success" v-if="!cancellingId || cancellingId !== reg.event.id">
+                    Записан
+                  </span>
+
+                  <button
+                      class="btn btn-outline-danger btn-sm"
+                      v-if="!cancellingId || cancellingId !== reg.event.id"
+                      @click="cancelRegistration(reg.event.id)"
+                  >
+                    Отменить
+                  </button>
+
+                  <div v-else class="spinner-border spinner-border-sm text-danger" role="status"></div>
+                </div>
               </li>
             </ul>
           </div>
@@ -112,7 +139,3 @@ onMounted(() => {
     </div>
   </div>
 </template>
-
-<style scoped>
-
-</style>
