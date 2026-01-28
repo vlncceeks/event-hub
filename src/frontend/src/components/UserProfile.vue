@@ -1,4 +1,5 @@
 <script setup>
+import UserEditForm from "@/components/UserEditForm.vue";
 import { onMounted, ref } from "vue";
 import { useAuth } from "@/store/auth";
 
@@ -7,9 +8,24 @@ const { isAuthenticated, user, token } = useAuth();
 const registrations = ref([]);
 const loading = ref(true);
 const error = ref(null);
-const cancellingId = ref(null); // для дизейбла кнопки отмены
+const cancellingId = ref(null);
+const view = ref("profile");
 
 const API_URL = "http://localhost:8081";
+
+const openEdit = () => {
+  view.value = "edit";
+};
+
+const backToProfile = () => {
+  view.value = "profile";
+};
+
+const handleUpdated = (updatedUser) => {
+  user.value = updatedUser;
+  localStorage.setItem("user", JSON.stringify(updatedUser));
+  view.value = "profile";
+};
 
 const fetchRegistrations = async () => {
   loading.value = true;
@@ -45,7 +61,6 @@ const cancelRegistration = async (eventId) => {
       throw new Error(err.message || "Ошибка отмены записи");
     }
 
-    // удаляем запись из списка
     registrations.value = registrations.value.filter(r => r.event.id !== eventId);
 
   } catch (e) {
@@ -72,21 +87,26 @@ onMounted(() => {
           Для просмотра личного кабинета необходимо войти в систему
         </div>
 
-        <div v-else class="card shadow-sm mb-4">
-          <div class="card-body">
-            <h4 class="card-title mb-3">Личный кабинет</h4>
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item">
-                <strong>Имя пользователя:</strong> {{ user?.username }}
-              </li>
-              <li class="list-group-item">
-                <strong>Email:</strong> {{ user?.email }}
-              </li>
-            </ul>
-          </div>
-        </div>
+        <div v-if="view === 'profile'">
+          <div class="card shadow-sm mb-4">
+            <div class="card-body">
+              <h4 class="card-title mb-3">Личный кабинет</h4>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                  <strong>Имя пользователя:</strong> {{ user?.username }}
+                </li>
+                <li class="list-group-item">
+                  <strong>Email:</strong> {{ user?.email }}
+                </li>
+              </ul>
 
-        <div v-if="isAuthenticated" class="card shadow-sm">
+              <button class="btn btn-outline-primary" @click="openEdit">
+                Редактировать профиль
+              </button>
+            </div>
+          </div>
+
+          <div class="card shadow-sm">
           <div class="card-body">
             <h5 class="card-title mb-3">Мои записи на мероприятия</h5>
 
@@ -134,7 +154,13 @@ onMounted(() => {
             </ul>
           </div>
         </div>
+        </div>
 
+        <UserEditForm
+            v-else
+            @back="backToProfile"
+            @updated="handleUpdated"
+        />
       </div>
     </div>
   </div>

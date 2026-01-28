@@ -3,6 +3,7 @@ package mamonova.com.events.service;
 import lombok.RequiredArgsConstructor;
 import mamonova.com.events.dto.request.CreateEventRequest;
 import mamonova.com.events.dto.request.UpdateEventRequest;
+import mamonova.com.events.exception.BadRequestException;
 import mamonova.com.events.exception.NotFoundException;
 import mamonova.com.events.model.Event;
 import mamonova.com.events.repository.EventRepository;
@@ -38,6 +39,7 @@ public class EventService {
         event.setDate(request.getDate() != null ? request.getDate() : event.getDate());
         if (request.getTotalSeats() != null) {
             int diff = request.getTotalSeats() - event.getTotalSeats();
+            if (event.getAvailableSeats() + diff < 0) throw new BadRequestException("Количество мест не может быть меньше уже забронированных");
             event.setTotalSeats(request.getTotalSeats());
             event.setAvailableSeats(event.getAvailableSeats() + diff);
         }

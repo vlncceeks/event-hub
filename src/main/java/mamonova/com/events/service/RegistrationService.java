@@ -65,4 +65,8 @@ public class RegistrationService {
     public List<EventRegistration> getEventRegistrations(Long eventId) {
         return registrationRepository.findAllByEventId(eventId);
     }
+
+    public boolean hasEventRegistration(Long eventId, Long userId) {
+        return registrationRepository.existsByUserIdAndEventId(userId, eventId);
+    }
 }

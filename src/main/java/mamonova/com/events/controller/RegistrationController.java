@@ -2,6 +2,7 @@ package mamonova.com.events.controller;
 
 import lombok.RequiredArgsConstructor;
 import mamonova.com.events.dto.response.RegistrationResponse;
+import mamonova.com.events.dto.response.RegistrationStatusResponse;
 import mamonova.com.events.mapper.RegistrationMapper;
 import mamonova.com.events.service.AuthService;
 import mamonova.com.events.service.RegistrationService;
@@ -33,7 +34,7 @@ public class RegistrationController {
     }
 
     @DeleteMapping("/events/{eventId}/register")
-    public ResponseEntity<?> cancel(@PathVariable Long eventId,
+    public ResponseEntity<String> cancel(@PathVariable Long eventId,
                                     @RequestHeader("Authorization") String authHeader) {
 
         Long userId = authService.getCurrentUser(authHeader);
@@ -64,6 +65,15 @@ public class RegistrationController {
         return ResponseEntity.ok(
                 registrationMapper.toDtoList(registrationService.getEventRegistrations(eventId))
         );
+    }
+
+    @GetMapping("/events/{eventId}/registrations/me")
+    public ResponseEntity<RegistrationStatusResponse> hasRegistration(@PathVariable Long eventId,
+                                                  @RequestHeader("Authorization") String authHeader) {
+        Long userId = authService.getCurrentUser(authHeader);
+        boolean registered = registrationService.hasEventRegistration(eventId, userId);
+
+        return ResponseEntity.ok(new RegistrationStatusResponse(registered));
     }
 }
 

@@ -15,13 +15,12 @@ const form = ref({
   description: "",
   date: "",
   totalSeats: 1,
-  imageUrl: null // пустое поле будет null
+  imageUrl: null
 });
 
 const loading = ref(false);
 const error = ref(null);
 
-// Заполняем форму при редактировании
 onMounted(() => {
   if (props.eventToEdit) {
     form.value = {
